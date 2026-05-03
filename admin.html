@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EconOpportunities Forum - Admin</title>
+<style>
+:root { --navy:#0A2342; --gold:#D4A017; --gold-dark:#B8860B; --gray:#6b7280; --border:#e5e7eb; }
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;background:#ffffff;color:#111827;line-height:1.5}
+header{background:var(--navy);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+header h1{margin:0;font-size:18px;font-weight:700;letter-spacing:.2px}
+.btn{background:var(--gold);color:var(--navy);border:none;padding:13px 22px;border-radius:10px;font-weight:700;font-size:15px;cursor:pointer;transition:.2s;box-shadow:0 2px 4px rgba(212,160,23,.2)}
+.btn:hover{background:var(--gold-dark);transform:translateY(-1px)}
+.btn:active{transform:translateY(0)}
+.btn-small{padding:9px 16px;font-size:14px;border-radius:8px}
+.btn-danger{background:#dc2626;color:#fff;box-shadow:0 2px 4px rgba(220,38,38,.2)}
+.btn-danger:hover{background:#b91c1c}
+.btn-outline{background:#fff;color:var(--navy);border:2px solid #fff}
+.container{max-width:980px;margin:0 auto;padding:20px 16px}
+#login-view{min-height:calc(100vh - 60px);display:flex;align-items:center;justify-content:center;padding:24px;background:#f9fafb}
+.login-card{width:100%;max-width:400px;background:#fff;border:1px solid var(--border);border-radius:16px;padding:32px;box-shadow:0 10px 30px rgba(10,35,66,.08)}
+.login-card h2{margin:0 0 6px;color:var(--navy);font-size:24px}
+.login-card p{margin:0 0 24px;color:var(--gray);font-size:14px}
+label{display:block;font-weight:600;font-size:13px;margin-bottom:6px;color:#374151;text-transform:uppercase;letter-spacing:.3px}
+input,select,textarea{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;background:#fff;transition:.2s;margin-bottom:14px;font-family:inherit}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(212,160,23,.15)}
+textarea{resize:vertical;min-height:80px}
+#admin-view{display:none}
+.tabs{display:flex;gap:6px;border-bottom:2px solid var(--border);margin-bottom:24px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:0}
+.tab-btn{padding:14px 22px;background:transparent;border:none;border-bottom:3px solid transparent;font-weight:700;color:var(--gray);cursor:pointer;white-space:nowrap;font-size:15px;transition:.2s}
+.tab-btn.active{color:var(--navy);border-bottom-color:var(--gold)}
+.tab-content{display:none}
+.tab-content.active{display:block;animation:fade .2s}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.form-card{background:#f9fafb;border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:28px}
+.form-card h3{margin:0 0 16px;color:var(--navy);font-size:18px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:640px){.form-grid{grid-template-columns:1fr}.btn{width:100%}.form-card .btn{margin-top:4px}}
+.list-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.list-header h3{margin:0;color:var(--navy);font-size:18px}
+.count-badge{background:var(--navy);color:#fff;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700}
+.item{background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;transition:.2s}
+.item:hover{border-color:#d1d5db;box-shadow:0 4px 12px rgba(0,0,0,.04)}
+.item-content{flex:1;min-width:0}
+.item-title{font-weight:700;color:var(--navy);margin:0 0 6px;font-size:16px;line-height:1.3;word-break:break-word}
+.item-meta{font-size:13px;color:var(--gray);margin-bottom:8px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.item-meta span{background:#f3f4f6;padding:2px 8px;border-radius:6px;font-weight:500}
+.item-meta a{color:var(--navy);text-decoration:none;font-weight:600}
+.item-meta a:hover{text-decoration:underline}
+.item-desc{font-size:14px;color:#374151;margin:0;line-height:1.45;word-break:break-word;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.empty-state{text-align:center;padding:48px 20px;color:var(--gray);background:#f9fafb;border:1px dashed var(--border);border-radius:12px;font-size:14px}
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(120px);background:var(--navy);color:#fff;padding:14px 22px;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.18);opacity:0;transition:.3s;font-weight:600;font-size:14px;z-index:1000;max-width:90vw;text-align:center}
+#toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+#toast.success{background:#059669}
+#toast.error{background:#dc2626}
+.loading{text-align:center;padding:40px;color:var(--gray)}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<header>
+  <h1>EconOpportunities Forum</h1>
+  <button id="logoutBtn" class="btn btn-small btn-outline hidden">Logout</button>
+</header>
+
+<div id="login-view">
+  <div class="login-card">
+    <h2>Admin Login</h2>
+    <p>Sign in to manage opportunities, events & resources</p>
+    <form id="loginForm">
+      <label for="email">Email</label>
+      <input type="email" id="email" required placeholder="admin@econforum-bd.com" autocomplete="username">
+      <label for="password">Password</label>
+      <input type="password" id="password" required placeholder="••••••••" autocomplete="current-password">
+      <button type="submit" class="btn" style="width:100%;margin-top:8px">Sign In</button>
+    </form>
+  </div>
+</div>
+
+<div id="admin-view">
+  <div class="container">
+    <nav class="tabs">
+      <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
+      <button class="tab-btn" data-tab="opportunities">Opportunities</button>
+      <button class="tab-btn" data-tab="events">Events</button>
+      <button class="tab-btn" data-tab="resources">Resources</button>
+      <button class="tab-btn" data-tab="members">Members</button>
+      <button class="tab-btn" data-tab="settings">Site Settings</button>
+    </nav>
+
+    
+    <!-- DASHBOARD -->
+    <div id="tab-dashboard" class="tab-content active">
+      <div class="form-card" style="background:var(--navy);color:white">
+        <h3 style="color:white;margin:0 0 8px">Welcome, Admin</h3>
+        <p style="margin:0;opacity:.9">Manage everything your members see on the frontend</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px">
+        <div class="form-card" style="text-align:center;padding:18px"><div style="font-size:28px;font-weight:800;color:var(--navy)" id="dash-opps">0</div><div style="color:var(--gray);font-size:13px">Opportunities</div></div>
+        <div class="form-card" style="text-align:center;padding:18px"><div style="font-size:28px;font-weight:800;color:var(--navy)" id="dash-events">0</div><div style="color:var(--gray);font-size:13px">Events</div></div>
+        <div class="form-card" style="text-align:center;padding:18px"><div style="font-size:28px;font-weight:800;color:var(--navy)" id="dash-resources">0</div><div style="color:var(--gray);font-size:13px">Resources</div></div>
+        <div class="form-card" style="text-align:center;padding:18px"><div style="font-size:28px;font-weight:800;color:var(--navy)" id="dash-members">0</div><div style="color:var(--gray);font-size:13px">Members</div></div>
+      </div>
+      <div class="form-card">
+        <h3>Quick Edit Frontend</h3>
+        <div style="display:grid;gap:10px">
+          <button class="btn" onclick="switchTab('opportunities')">+ Add Scholarship / Internship</button>
+          <button class="btn" onclick="switchTab('events')">+ Add Event / Webinar</button>
+          <button class="btn" onclick="switchTab('resources')">+ Add Study Material</button>
+          <button class="btn" onclick="switchTab('settings')" style="background:#fff;color:var(--navy);border:2px solid var(--navy)">Edit Homepage Text & Contact</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- OPPORTUNITIES -->
+    <div id="tab-opportunities" class="tab-content">
+      <div class="form-card">
+        <h3>Add Opportunity</h3>
+        <form id="form-opportunities">
+          <label>Title</label>
+          <input id="opp-title" required placeholder="e.g., IMF Youth Fellowship 2025">
+          <div class="form-grid">
+            <div>
+              <label>Type</label>
+              <select id="opp-type" required>
+                <option value="">Select type</option>
+                <option>Scholarship</option>
+                <option>Internship</option>
+                <option>Fellowship</option>
+                <option>Grant</option>
+                <option>Job</option>
+                <option>Competition</option>
+                <option>Conference</option>
+              </select>
+            </div>
+            <div>
+              <label>Deadline</label>
+              <input type="date" id="opp-deadline" required>
+            </div>
+          </div>
+          <label>Link</label>
+          <input type="url" id="opp-link" required placeholder="https://">
+          <label>Description</label>
+          <textarea id="opp-desc" required placeholder="Short description..."></textarea>
+          <button type="submit" class="btn">Add Opportunity</button>
+        </form>
+      </div>
+      <div class="list-header">
+        <h3>Current Opportunities</h3>
+        <span class="count-badge" id="count-opp">0</span>
+      </div>
+      <div id="list-opportunities" class="loading">Loading...</div>
+    </div>
+
+    <!-- EVENTS -->
+    <div id="tab-events" class="tab-content">
+      <div class="form-card">
+        <h3>Add Event</h3>
+        <form id="form-events">
+          <label>Title</label>
+          <input id="evt-title" required placeholder="e.g., Bangladesh Economic Summit">
+          <div class="form-grid">
+            <div>
+              <label>Date</label>
+              <input type="date" id="evt-date" required>
+            </div>
+            <div>
+              <label>Location</label>
+              <input id="evt-location" required placeholder="Dhaka / Online">
+            </div>
+          </div>
+          <label>Link</label>
+          <input type="url" id="evt-link" placeholder="https:// (optional)">
+          <button type="submit" class="btn">Add Event</button>
+        </form>
+      </div>
+      <div class="list-header">
+        <h3>Upcoming Events</h3>
+        <span class="count-badge" id="count-evt">0</span>
+      </div>
+      <div id="list-events" class="loading">Loading...</div>
+    </div>
+
+    <!-- RESOURCES -->
+    <div id="tab-resources" class="tab-content">
+      <div class="form-card">
+        <h3>Add Resource</h3>
+        <form id="form-resources">
+          <label>Title</label>
+          <input id="res-title" required placeholder="e.g., World Bank Data Guide">
+          <div class="form-grid">
+            <div>
+              <label>Type</label>
+              <select id="res-type" required>
+                <option value="">Select type</option>
+                <option>Report</option>
+                <option>Guide</option>
+                <option>Tool</option>
+                <option>Course</option>
+                <option>Article</option>
+                <option>Dataset</option>
+                <option>Book</option>
+              </select>
+            </div>
+            <div>
+              <label>Link</label>
+              <input type="url" id="res-link" required placeholder="https://">
+            </div>
+          </div>
+          <button type="submit" class="btn">Add Resource</button>
+        </form>
+      </div>
+      <div class="list-header">
+        <h3>Resources Library</h3>
+        <span class="count-badge" id="count-res">0</span>
+      </div>
+      <div id="list-resources" class="loading">Loading...</div>
+    </div>
+
+  
+    <!-- MEMBERS -->
+    <div id="tab-members" class="tab-content">
+      <div class="list-header"><h3>Members <span class="count-badge" id="count-members">0</span></h3></div>
+      <div id="list-members" class="loading">Loading members...</div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="tab-settings" class="tab-content">
+      <div class="form-card">
+        <h3>Edit Homepage Content</h3>
+        <p style="color:var(--gray);font-size:14px;margin:-8px 0 16px">Changes appear instantly on index.html</p>
+        <form id="form-settings">
+          <label>Hero Title (Bangla/English)</label>
+          <input id="set-heroTitle" placeholder="EconOpportunities Forum">
+          <label>Hero Subtitle</label>
+          <textarea id="set-heroSub" placeholder="Bangladesh's hub for economics students..."></textarea>
+          <label>About Section</label>
+          <textarea id="set-about" placeholder="About your forum..."></textarea>
+          <div class="form-grid">
+            <div><label>WhatsApp Group Link</label><input id="set-whatsapp" placeholder="https://chat.whatsapp.com/..."></div>
+            <div><label>Contact Email</label><input id="set-email" placeholder="hello@econforum.bd"></div>
+          </div>
+          <button type="submit" class="btn" style="margin-top:8px">Save Changes</button>
+        </form>
+      </div>
+    </div>
+
+</div>
+</div>
+
+<div id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBNLvd7K3yeFs5QdGUamWV5gVCTzicCyeM",
+  authDomain: "econforum-bd.firebaseapp.com",
+  projectId: "econforum-bd",
+  storageBucket: "econforum-bd.firebasestorage.app",
+  messagingSenderId: "933000604482",
+  appId: "1:933000604482:web:03bde4cfe28ff744e7b6db"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const loginView = document.getElementById('login-view');
+const adminView = document.getElementById('admin-view');
+const logoutBtn = document.getElementById('logoutBtn');
+const loginForm = document.getElementById('loginForm');
+const toast = document.getElementById('toast');
+
+const ADMIN_EMAIL = 'admin@econforum-bd';
+
+function showToast(msg, type='success'){
+  toast.textContent = msg;
+  toast.className = 'show ' + type;
+  setTimeout(()=> toast.className = '', 3000);
+}
+
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+// Auth
+loginForm.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  try{
+    const cred = await signInWithEmailAndPassword(auth, email, password);
+    if(!cred.user.email.toLowerCase().startsWith(ADMIN_EMAIL)){
+      await signOut(auth);
+      showToast('Access denied: admin only', 'error');
+      return;
+    }
+    showToast('Welcome back!');
+    loginForm.reset();
+  }catch(err){
+    showToast(err.message, 'error');
+  }
+});
+
+logoutBtn.addEventListener('click', ()=> signOut(auth));
+
+let unsubs = [];
+onAuthStateChanged(auth, (user)=>{
+  const isAdmin = user && user.email && user.email.toLowerCase().startsWith(ADMIN_EMAIL);
+  if(isAdmin){
+    loginView.style.display = 'none';
+    adminView.style.display = 'block';
+    logoutBtn.classList.remove('hidden');
+    startListeners();
+  }else{
+    loginView.style.display = 'flex';
+    adminView.style.display = 'none';
+    logoutBtn.classList.add('hidden');
+    unsubs.forEach(u=>u()); unsubs=[];
+  }
+});
+
+// Tabs
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
+  });
+});
+
+// Forms
+document.getElementById('form-opportunities').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const data = {
+    title: oppTitle(),
+    type: document.getElementById('opp-type').value,
+    deadline: document.getElementById('opp-deadline').value,
+    link: document.getElementById('opp-link').value,
+    description: document.getElementById('opp-desc').value,
+    createdAt: serverTimestamp()
+  };
+  try{
+    await addDoc(collection(db,'opportunities'), data);
+    e.target.reset();
+    showToast('Opportunity added');
+  }catch(err){ showToast(err.message,'error') }
+});
+
+document.getElementById('form-events').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const data = {
+    title: document.getElementById('evt-title').value,
+    date: document.getElementById('evt-date').value,
+    location: document.getElementById('evt-location').value,
+    link: document.getElementById('evt-link').value,
+    createdAt: serverTimestamp()
+  };
+  try{
+    await addDoc(collection(db,'events'), data);
+    e.target.reset();
+    showToast('Event added');
+  }catch(err){ showToast(err.message,'error') }
+});
+
+document.getElementById('form-resources').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const data = {
+    title: document.getElementById('res-title').value,
+    type: document.getElementById('res-type').value,
+    link: document.getElementById('res-link').value,
+    createdAt: serverTimestamp()
+  };
+  try{
+    await addDoc(collection(db,'resources'), data);
+    e.target.reset();
+    showToast('Resource added');
+  }catch(err){ showToast(err.message,'error') }
+});
+
+function oppTitle(){ return document.getElementById('opp-title').value }
+
+// Real-time listeners
+function startListeners(){
+  if(unsubs.length) return;
+  
+  const oppList = document.getElementById('list-opportunities');
+  const evtList = document.getElementById('list-events');
+  const resList = document.getElementById('list-resources');
+
+  unsubs.push(onSnapshot(query(collection(db,'opportunities'), orderBy('createdAt','desc')), snap=>{
+    document.getElementById('count-opp').textContent = snap.size;
+    if(snap.empty){ oppList.innerHTML = '<div class="empty-state">No opportunities yet. Add your first above.</div>'; return; }
+    oppList.innerHTML = '';
+    snap.forEach(d=>{
+      const v = d.data();
+      oppList.innerHTML += `
+        <div class="item">
+          <div class="item-content">
+            <h4 class="item-title">${escapeHtml(v.title)}</h4>
+            <div class="item-meta">
+              <span>${escapeHtml(v.type)}</span>
+              <span>Deadline: ${escapeHtml(v.deadline)}</span>
+              ${v.link?`<a href="${escapeHtml(v.link)}" target="_blank" rel="noopener">Open Link →</a>`:''}
+            </div>
+            <p class="item-desc">${escapeHtml(v.description)}</p>
+          </div>
+          <button class="btn btn-small btn-danger" data-col="opportunities" data-id="${d.id}">Delete</button>
+        </div>`;
+    });
+  }));
+
+  unsubs.push(onSnapshot(query(collection(db,'events'), orderBy('createdAt','desc')), snap=>{
+    document.getElementById('count-evt').textContent = snap.size;
+    if(snap.empty){ evtList.innerHTML = '<div class="empty-state">No events yet.</div>'; return; }
+    evtList.innerHTML = '';
+    snap.forEach(d=>{
+      const v = d.data();
+      evtList.innerHTML += `
+        <div class="item">
+          <div class="item-content">
+            <h4 class="item-title">${escapeHtml(v.title)}</h4>
+            <div class="item-meta">
+              <span>${escapeHtml(v.date)}</span>
+              <span>${escapeHtml(v.location)}</span>
+              ${v.link?`<a href="${escapeHtml(v.link)}" target="_blank" rel="noopener">Details →</a>`:''}
+            </div>
+          <button class="btn btn-small btn-danger" data-col="events" data-id="${d.id}">Delete</button>
+        </div>`;
+    });
+  }));
+
+  unsubs.push(onSnapshot(query(collection(db,'resources'), orderBy('createdAt','desc')), snap=>{
+    document.getElementById('count-res').textContent = snap.size;
+    if(snap.empty){ resList.innerHTML = '<div class="empty-state">No resources yet.</div>'; return; }
+    resList.innerHTML = '';
+    snap.forEach(d=>{
+      const v = d.data();
+      resList.innerHTML += `
+        <div class="item">
+          <div class="item-content">
+            <h4 class="item-title">${escapeHtml(v.title)}</h4>
+            <div class="item-meta">
+              <span>${escapeHtml(v.type)}</span>
+              <a href="${escapeHtml(v.link)}" target="_blank" rel="noopener">Open Resource →</a>
+            </div>
+          </div>
+          <button class="btn btn-small btn-danger" data-col="resources" data-id="${d.id}">Delete</button>
+        </div>`;
+    });
+  }));
+}
+
+// Delete handler (delegation)
+document.addEventListener('click', async e=>{
+  const btn = e.target.closest('button[data-id]');
+  if(!btn) return;
+  if(!confirm('Delete this item permanently?')) return;
+  try{
+    await deleteDoc(doc(db, btn.dataset.col, btn.dataset.id));
+    showToast('Deleted');
+  }catch(err){ showToast(err.message,'error') }
+});
+
+  function switchTab(name){
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===name));
+    document.querySelectorAll('.tab-content').forEach(c=>c.classList.toggle('active', c.id==='tab-'+name));
+  }
+  window.switchTab = switchTab;
+
+  // Dashboard counts
+  function updateCounts(){
+    document.getElementById('dash-opps').textContent = document.querySelectorAll('#list-opportunities .item').length;
+    document.getElementById('dash-events').textContent = document.querySelectorAll('#list-events .item').length;
+    document.getElementById('dash-resources').textContent = document.querySelectorAll('#list-resources .item').length;
+    document.getElementById('dash-members').textContent = document.querySelectorAll('#list-members .item').length;
+  }
+  setInterval(updateCounts, 1000);
+
+  // MEMBERS
+  const membersCol = collection(db, 'members');
+  onSnapshot(query(membersCol, orderBy('createdAt','desc')), snap => {
+    const list = document.getElementById('list-members');
+    document.getElementById('count-members').textContent = snap.size;
+    if(snap.empty){ list.innerHTML='<div class="empty-state">No members yet</div>'; return; }
+    list.innerHTML = '';
+    snap.forEach(docSnap => {
+      const m = docSnap.data();
+      const div = document.createElement('div');
+      div.className='item';
+      div.innerHTML = `<div class="item-content"><div class="item-title">${m.name||'Unnamed'}</div><div class="item-meta"><span>${m.university||''}</span><span>${m.email||''}</span><span>${m.whatsapp||''}</span></div><div class="item-desc">${m.interests||''}</div></div><button class="btn-small btn-danger" data-id="${docSnap.id}">Delete</button>`;
+      div.querySelector('button').onclick = async ()=>{ if(confirm('Delete member?')){ await deleteDoc(doc(db,'members',docSnap.id)); showToast('Member deleted'); } };
+      list.appendChild(div);
+    });
+  });
+
+  // SETTINGS
+  const settingsDoc = doc(db, 'settings', 'site');
+  onSnapshot(settingsDoc, snap => {
+    if(snap.exists()){
+      const s = snap.data();
+      document.getElementById('set-heroTitle').value = s.heroTitle||'';
+      document.getElementById('set-heroSub').value = s.heroSub||'';
+      document.getElementById('set-about').value = s.about||'';
+      document.getElementById('set-whatsapp').value = s.whatsapp||'';
+      document.getElementById('set-email').value = s.email||'';
+    }
+  });
+  document.getElementById('form-settings').onsubmit = async (e)=>{
+    e.preventDefault();
+    await setDoc(settingsDoc, {
+      heroTitle: document.getElementById('set-heroTitle').value,
+      heroSub: document.getElementById('set-heroSub').value,
+      about: document.getElementById('set-about').value,
+      whatsapp: document.getElementById('set-whatsapp').value,
+      email: document.getElementById('set-email').value,
+      updatedAt: serverTimestamp()
+    }, {merge:true});
+    showToast('Homepage updated - refresh index.html to see','success');
+  };
+
+</script>
+</body>
+</html>
